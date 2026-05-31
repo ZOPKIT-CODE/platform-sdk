@@ -1,0 +1,19 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    include: ['src/**/*.test.ts'],
+    environment: 'node',
+    globals: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: [
+        'src/events/registry.ts',
+        'src/messaging/envelope.ts',
+        'src/resilience/circuit-breaker.ts',
+        'src/auth/service-token-middleware.ts',
+      ],
+    },
+  },
+});

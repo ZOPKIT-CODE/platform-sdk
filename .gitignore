@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Logs / caches / coverage
+*.log
+npm-debug.log*
+.pnpm-debug.log*
+coverage/
+.vitest/
+.nyc_output/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Env / secrets (the SDK needs none, but never commit them)
+.env
+.env.*
+!.env.example
+
+# NOTE: dist/ is intentionally COMMITTED. The apps consume this package via a
+# relative `file:../../packages/platform-sdk` dependency and snapshot it at
+# install time (they do NOT run a build step for it), so the compiled output must
+# be present in a fresh checkout. Run `pnpm build` after changing src/ and commit
+# the regenerated dist/ alongside the source change.
