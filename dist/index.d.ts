@@ -31,8 +31,8 @@ export type { CircuitBreakerOptions, CircuitState, } from './resilience/circuit-
 export { verifyJwt, extractBearerToken, revokeToken, getJWKS, invalidateJwks, configureRevocation, RevocationCheckUnavailableError, } from './auth/local-jwt';
 export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken, RevocationConfig } from './auth/local-jwt';
 export { platformAuthPlugin } from './auth/middleware';
-export { verifyServiceToken } from './auth/service-token-middleware';
-export type { ServiceContext, ServiceTokenClaims, VerifyServiceTokenOptions, } from './auth/service-token-middleware';
+export { verifyServiceToken, verifyHs256WithRotation } from './auth/service-token-middleware';
+export type { ServiceContext, ServiceTokenClaims, VerifyServiceTokenOptions, VerifyHs256Options, } from './auth/service-token-middleware';
 export { createAuthorizer, matchPermission, permsVersion } from './auth/authorizer';
 export type { Authorizer, AuthorizerConfig, AuthClaims, AuthDecision, LoadedGrants, AuthorizerLogger, } from './auth/authorizer';
 export { memoryCache, redisCache } from './auth/perm-cache';

@@ -101,11 +101,12 @@ export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken, RevocationConf
 
 export { platformAuthPlugin } from './auth/middleware';
 
-export { verifyServiceToken } from './auth/service-token-middleware';
+export { verifyServiceToken, verifyHs256WithRotation } from './auth/service-token-middleware';
 export type {
   ServiceContext,
   ServiceTokenClaims,
   VerifyServiceTokenOptions,
+  VerifyHs256Options,
 } from './auth/service-token-middleware';
 
 // ─── Authorization (framework-agnostic core; resolve permissions server-side) ──

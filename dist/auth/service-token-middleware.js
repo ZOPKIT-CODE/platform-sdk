@@ -3,9 +3,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.verifyHs256WithRotation = verifyHs256WithRotation;
 exports.verifyServiceToken = verifyServiceToken;
 const fastify_plugin_1 = __importDefault(require("fastify-plugin"));
 const jose_1 = require("jose");
+/** Build the ordered candidate-key list; empty/whitespace secrets are filtered out. */
+function buildCandidateKeys(jwtSecret, additionalSecrets) {
+    const encoder = new TextEncoder();
+    const keys = [encoder.encode(jwtSecret)];
+    for (const extra of additionalSecrets ?? []) {
+        if (typeof extra === 'string' && extra.length > 0)
+            keys.push(encoder.encode(extra));
+    }
+    return keys;
+}
+/** Try each candidate key in order; return the first valid payload or throw the last error. */
+async function verifyWithKeys(token, candidateKeys, issuer, audience) {
+    let lastErr;
+    for (const key of candidateKeys) {
+        try {
+            const { payload } = await (0, jose_1.jwtVerify)(token, key, { algorithms: ['HS256'], issuer, audience });
+            return payload;
+        }
+        catch (err) {
+            // jose surfaces signature/exp/issuer/audience failures through one exception
+            // type, so fall through to the next secret; the final error is reported.
+            lastErr = err;
+        }
+    }
+    throw lastErr ?? new Error('jwt verification failed');
+}
+/**
+ * Verify an HS256 JWT against a primary secret + optional rotation fallbacks (zero-downtime
+ * secret rotation). This is the SAME rotation-verify logic the verifyServiceToken plugin
+ * uses, exported so apps that verify service tokens INLINE (not via the plugin) share one
+ * tested implementation instead of hand-rolling the candidate-key loop. Returns the payload
+ * or throws the last verification error.
+ */
+async function verifyHs256WithRotation(token, opts) {
+    if (!opts.jwtSecret || opts.jwtSecret.length === 0) {
+        throw new Error('verifyHs256WithRotation: jwtSecret is required');
+    }
+    return verifyWithKeys(token, buildCandidateKeys(opts.jwtSecret, opts.additionalSecrets), opts.issuer, opts.audience);
+}
 const verifyServiceTokenPlugin = async (fastify, options) => {
     const { allowedServices, jwtSecret, additionalSecrets, issuer, audience, routePathPredicate, onFailure = 'reject', } = options;
     if (!jwtSecret || jwtSecret.length === 0) {
@@ -14,18 +54,8 @@ const verifyServiceTokenPlugin = async (fastify, options) => {
     if (!allowedServices || allowedServices.length === 0) {
         throw new Error('verifyServiceToken: allowedServices must be non-empty');
     }
-    // Build the ordered list of candidate keys: primary first, then any
-    // rotation fallbacks. Empty / whitespace entries are filtered out so a
-    // misconfigured `JWT_SECRET_PREVIOUS=,,` doesn't smuggle in an empty key.
-    const encoder = new TextEncoder();
-    const candidateKeys = [encoder.encode(jwtSecret)];
-    if (additionalSecrets && additionalSecrets.length > 0) {
-        for (const extra of additionalSecrets) {
-            if (typeof extra === 'string' && extra.length > 0) {
-                candidateKeys.push(encoder.encode(extra));
-            }
-        }
-    }
+    // Primary key first, then rotation fallbacks (empty entries filtered).
+    const candidateKeys = buildCandidateKeys(jwtSecret, additionalSecrets);
     const allowedSet = new Set(allowedServices);
     if (!fastify.hasRequestDecorator('serviceContext')) {
         fastify.decorateRequest('serviceContext', undefined);
@@ -52,29 +82,12 @@ const verifyServiceTokenPlugin = async (fastify, options) => {
             return handleFailure(reply);
         }
         let claims;
-        let lastErr;
-        for (let i = 0; i < candidateKeys.length; i++) {
-            try {
-                const { payload } = await (0, jose_1.jwtVerify)(token, candidateKeys[i], {
-                    algorithms: ['HS256'],
-                    issuer,
-                    audience,
-                });
-                claims = payload;
-                break;
-            }
-            catch (err) {
-                lastErr = err;
-                // Try the next candidate. Note: jose surfaces signature, exp,
-                // issuer, and audience failures all through the same exception
-                // type, so we fall through and try the next secret. If the token
-                // is genuinely expired, every secret will fail and the final
-                // error is reported.
-            }
+        try {
+            claims = (await verifyWithKeys(token, candidateKeys, issuer, audience));
         }
-        if (!claims) {
+        catch (err) {
             request.log.warn({
-                reason: lastErr instanceof Error ? lastErr.message : String(lastErr),
+                reason: err instanceof Error ? err.message : String(err),
                 keysTried: candidateKeys.length,
             }, 'service-token: jwt verification failed');
             return handleFailure(reply);

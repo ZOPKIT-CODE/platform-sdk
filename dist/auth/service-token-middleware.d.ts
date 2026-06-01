@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
+import { type JWTPayload } from 'jose';
 /**
  * Shared service-to-service token verification (HS256, shared secret).
  *
@@ -117,6 +118,24 @@ export interface VerifyServiceTokenOptions {
      */
     onFailure?: 'reject' | 'continue';
 }
+export interface VerifyHs256Options {
+    /** Primary HS256 secret, tried first. */
+    jwtSecret: string;
+    /** Rotation fallbacks tried in order after the primary (newest first). */
+    additionalSecrets?: string[];
+    /** Optional expected issuer. Validated if provided. */
+    issuer?: string;
+    /** Optional expected audience. Validated if provided. */
+    audience?: string;
+}
+/**
+ * Verify an HS256 JWT against a primary secret + optional rotation fallbacks (zero-downtime
+ * secret rotation). This is the SAME rotation-verify logic the verifyServiceToken plugin
+ * uses, exported so apps that verify service tokens INLINE (not via the plugin) share one
+ * tested implementation instead of hand-rolling the candidate-key loop. Returns the payload
+ * or throws the last verification error.
+ */
+export declare function verifyHs256WithRotation(token: string, opts: VerifyHs256Options): Promise<JWTPayload>;
 /**
  * Returns a Fastify plugin that protects routes with shared-secret service
  * token verification. Register inside an encapsulated scope to limit the
