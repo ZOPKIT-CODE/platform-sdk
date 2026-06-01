@@ -94,8 +94,10 @@ export {
   revokeToken,
   getJWKS,
   invalidateJwks,
+  configureRevocation,
+  RevocationCheckUnavailableError,
 } from './auth/local-jwt';
-export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken } from './auth/local-jwt';
+export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken, RevocationConfig } from './auth/local-jwt';
 
 export { platformAuthPlugin } from './auth/middleware';
 

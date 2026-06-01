@@ -28,8 +28,8 @@ export { BaseSQSConsumer, PermanentEventError, } from './messaging/base-sqs-cons
 export type { BaseSQSConsumerConfig, BaseConsumerLogger, ParsedEvent, HandlerResult, IdempotencyState, } from './messaging/base-sqs-consumer';
 export { CircuitBreaker, CircuitBreakerOpenError, } from './resilience/circuit-breaker';
 export type { CircuitBreakerOptions, CircuitState, } from './resilience/circuit-breaker';
-export { verifyJwt, extractBearerToken, revokeToken, getJWKS, invalidateJwks, } from './auth/local-jwt';
-export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken } from './auth/local-jwt';
+export { verifyJwt, extractBearerToken, revokeToken, getJWKS, invalidateJwks, configureRevocation, RevocationCheckUnavailableError, } from './auth/local-jwt';
+export type { JwtVerifyConfig, WrapperTokenClaims, VerifiedToken, RevocationConfig } from './auth/local-jwt';
 export { platformAuthPlugin } from './auth/middleware';
 export { verifyServiceToken } from './auth/service-token-middleware';
 export type { ServiceContext, ServiceTokenClaims, VerifyServiceTokenOptions, } from './auth/service-token-middleware';
