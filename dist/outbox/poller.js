@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createOutboxPoller = createOutboxPoller;
 /**
  * Outbox poller — reads unpublished rows from the outbox table and publishes
- * them to EventBridge, then marks them as published (ADR-009).
+ * them to the business-events SNS topic, then marks them as published (ADR-009).
  *
  * The caller is responsible for running this in a background process. It
  * should start with the application server and stop on SIGTERM.
@@ -42,7 +42,7 @@ function createOutboxPoller(store, publisher, config = {}) {
             return;
         const published = [];
         const failed = [];
-        // EventBridge PutEvents accepts up to 10 entries per call.
+        // SNS PublishBatch accepts up to 10 entries per call.
         // publishBatch() handles the chunking internally; results are returned in
         // the same order as the input events array.
         const events = rows.map((row) => row.payload);

@@ -24,8 +24,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NOTIFICATION_RETRY = exports.EXTERNAL_API_RETRY = exports.PM_RETRY = exports.HRMS_RETRY = exports.FA_JOURNAL_RETRY = exports.CRM_MUTATION_RETRY = exports.LOOKUP_RETRY = exports.ACTIVITY_OPTIONS = exports.TASK_QUEUES = exports.createTemporalClient = exports.InMemoryIdempotencyStore = exports.IDEMPOTENCY_SCHEMA_SQL = exports.createOutboxPoller = exports.OUTBOX_SCHEMA_SQL = exports.redisCache = exports.memoryCache = exports.permsVersion = exports.matchPermission = exports.createAuthorizer = exports.verifyHs256WithRotation = exports.verifyServiceToken = exports.platformAuthPlugin = exports.RevocationCheckUnavailableError = exports.configureRevocation = exports.invalidateJwks = exports.getJWKS = exports.revokeToken = exports.extractBearerToken = exports.verifyJwt = exports.CircuitBreakerOpenError = exports.CircuitBreaker = exports.PermanentEventError = exports.BaseSQSConsumer = exports.SNSEnvelopeParseError = exports.parseSNSEnvelope = exports.isKnownEventType = exports.validateEvent = exports.SERVICE_NAMES = exports.EventEnvelope = exports.EVENT_REGISTRY = exports.getEventSchema = exports.ALL_EVENT_SCHEMAS = exports.createSQSConsumer = exports.EventBridgePublisher = exports.parsePlatformBusMessage = exports.buildCausation = exports.wouldCreateLoop = exports.createEvent = exports.BusinessEventSchema = exports.APP_CODES = void 0;
-exports.createOrchestrationWorker = exports.createWorker = void 0;
+exports.EXTERNAL_API_RETRY = exports.PM_RETRY = exports.HRMS_RETRY = exports.FA_JOURNAL_RETRY = exports.CRM_MUTATION_RETRY = exports.LOOKUP_RETRY = exports.ACTIVITY_OPTIONS = exports.TASK_QUEUES = exports.createTemporalClient = exports.InMemoryIdempotencyStore = exports.IDEMPOTENCY_SCHEMA_SQL = exports.createOutboxPoller = exports.OUTBOX_SCHEMA_SQL = exports.redisCache = exports.memoryCache = exports.permsVersion = exports.matchPermission = exports.createAuthorizer = exports.verifyHs256WithRotation = exports.verifyServiceToken = exports.platformAuthPlugin = exports.RevocationCheckUnavailableError = exports.configureRevocation = exports.invalidateJwks = exports.getJWKS = exports.revokeToken = exports.extractBearerToken = exports.verifyJwt = exports.CircuitBreakerOpenError = exports.CircuitBreaker = exports.PermanentEventError = exports.BaseSQSConsumer = exports.SNSEnvelopeParseError = exports.parseSNSEnvelope = exports.isKnownEventType = exports.validateEvent = exports.SERVICE_NAMES = exports.EventEnvelope = exports.EVENT_REGISTRY = exports.getEventSchema = exports.ALL_EVENT_SCHEMAS = exports.createSQSConsumer = exports.validateEventPayload = exports.SnsPublisher = exports.parsePlatformBusMessage = exports.buildCausation = exports.wouldCreateLoop = exports.createEvent = exports.BusinessEventSchema = exports.APP_CODES = void 0;
+exports.createOrchestrationWorker = exports.createWorker = exports.NOTIFICATION_RETRY = void 0;
 // ─── Events ────────────────────────────────────────────────────────────────
 var envelope_1 = require("./events/envelope");
 Object.defineProperty(exports, "APP_CODES", { enumerable: true, get: function () { return envelope_1.APP_CODES; } });
@@ -36,8 +36,10 @@ Object.defineProperty(exports, "wouldCreateLoop", { enumerable: true, get: funct
 Object.defineProperty(exports, "buildCausation", { enumerable: true, get: function () { return loop_guard_1.buildCausation; } });
 var parse_js_1 = require("./events/parse.js");
 Object.defineProperty(exports, "parsePlatformBusMessage", { enumerable: true, get: function () { return parse_js_1.parsePlatformBusMessage; } });
-var publisher_1 = require("./events/publisher");
-Object.defineProperty(exports, "EventBridgePublisher", { enumerable: true, get: function () { return publisher_1.EventBridgePublisher; } });
+var sns_publisher_js_1 = require("./events/sns-publisher.js");
+Object.defineProperty(exports, "SnsPublisher", { enumerable: true, get: function () { return sns_publisher_js_1.SnsPublisher; } });
+var publisher_js_1 = require("./events/publisher.js");
+Object.defineProperty(exports, "validateEventPayload", { enumerable: true, get: function () { return publisher_js_1.validateEventPayload; } });
 var consumer_1 = require("./events/consumer");
 Object.defineProperty(exports, "createSQSConsumer", { enumerable: true, get: function () { return consumer_1.createSQSConsumer; } });
 // ─── Event Schemas ─────────────────────────────────────────────────────────

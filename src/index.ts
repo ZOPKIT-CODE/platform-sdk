@@ -23,8 +23,9 @@ export { wouldCreateLoop, buildCausation } from './events/loop-guard';
 export { parsePlatformBusMessage } from './events/parse.js';
 export type { PlatformBusEnvelope } from './events/parse.js';
 
-export { EventBridgePublisher } from './events/publisher';
-export type { EventBridgePublisherConfig, PublishResult } from './events/publisher';
+export { SnsPublisher } from './events/sns-publisher.js';
+export type { SnsPublisherConfig, PublishResult, BusinessEventPublisher } from './events/sns-publisher.js';
+export { validateEventPayload } from './events/publisher.js';
 
 export { createSQSConsumer } from './events/consumer';
 export type { SQSConsumerConfig, EventHandler } from './events/consumer';

@@ -1,5 +1,5 @@
 import type { OutboxStore } from './types';
-import type { EventBridgePublisher } from '../events/publisher';
+import type { BusinessEventPublisher } from '../events/sns-publisher';
 export interface OutboxPollerConfig {
     /** How often to poll in milliseconds. Default 1000 (1 second). */
     intervalMs?: number;
@@ -16,7 +16,7 @@ export interface OutboxPollerConfig {
 }
 /**
  * Outbox poller — reads unpublished rows from the outbox table and publishes
- * them to EventBridge, then marks them as published (ADR-009).
+ * them to the business-events SNS topic, then marks them as published (ADR-009).
  *
  * The caller is responsible for running this in a background process. It
  * should start with the application server and stop on SIGTERM.
@@ -28,7 +28,7 @@ export interface OutboxPollerConfig {
  * process.on('SIGTERM', () => poller.stop());
  * ```
  */
-export declare function createOutboxPoller(store: OutboxStore, publisher: EventBridgePublisher, config?: OutboxPollerConfig): {
+export declare function createOutboxPoller(store: OutboxStore, publisher: BusinessEventPublisher, config?: OutboxPollerConfig): {
     start: () => void;
     stop: () => void;
 };
