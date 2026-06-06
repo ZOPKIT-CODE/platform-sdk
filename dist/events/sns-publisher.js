@@ -51,11 +51,21 @@ class SnsPublisher {
     /** Publish directly to SNS — used inline and by the outbox poller. */
     async publishDirect(event) {
         try {
-            const result = await this.client.send(new client_sns_1.PublishCommand({
+            // Wrap in a producer span so buildMessageAttributes (which injects the
+            // trace context) runs with a valid active span — even from background
+            // contexts. Otherwise the consumer would start a fresh root trace.
+            const result = await (0, trace_context_1.withProducerSpan)(`publish ${event.eventType}`, {
+                'messaging.system': 'aws_sns',
+                'messaging.operation.name': 'publish',
+                'messaging.destination.name': 'business-events',
+                'messaging.message.id': event.messageId,
+                'event.type': event.eventType,
+                'event.source_system': event.sourceSystem,
+            }, () => this.client.send(new client_sns_1.PublishCommand({
                 TopicArn: this.config.topicArn,
                 Message: JSON.stringify(event),
                 MessageAttributes: buildMessageAttributes(event),
-            }));
+            })));
             return { success: true, messageId: result.MessageId };
         }
         catch (err) {
@@ -72,13 +82,24 @@ class SnsPublisher {
         const chunks = chunkArray(events, 10);
         const results = [];
         for (const chunk of chunks) {
-            const entries = chunk.map((ev, i) => ({
-                Id: String(i),
-                Message: JSON.stringify(ev),
-                MessageAttributes: buildMessageAttributes(ev),
-            }));
             try {
-                const response = await this.client.send(new client_sns_1.PublishBatchCommand({ TopicArn: this.config.topicArn, PublishBatchRequestEntries: entries }));
+                // Build entries + send inside one producer span so buildMessageAttributes
+                // (trace injection) runs with a valid active span. Events in a chunk share
+                // this span's trace — the batch API carries no per-event origin context, so
+                // a single span per chunk is the correct granularity.
+                const response = await (0, trace_context_1.withProducerSpan)(`publish batch (${chunk.length})`, {
+                    'messaging.system': 'aws_sns',
+                    'messaging.operation.name': 'publish',
+                    'messaging.destination.name': 'business-events',
+                    'messaging.batch.message_count': chunk.length,
+                }, () => {
+                    const entries = chunk.map((ev, i) => ({
+                        Id: String(i),
+                        Message: JSON.stringify(ev),
+                        MessageAttributes: buildMessageAttributes(ev),
+                    }));
+                    return this.client.send(new client_sns_1.PublishBatchCommand({ TopicArn: this.config.topicArn, PublishBatchRequestEntries: entries }));
+                });
                 const ok = new Map((response.Successful ?? []).map((s) => [s.Id, s.MessageId]));
                 const failedIds = new Set((response.Failed ?? []).map((f) => f.Id));
                 const failedMsg = new Map((response.Failed ?? []).map((f) => [f.Id, f.Message ?? 'SNS rejected entry']));
