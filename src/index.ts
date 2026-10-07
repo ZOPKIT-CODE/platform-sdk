@@ -135,7 +135,7 @@ export type { OutboxPollerConfig } from './outbox/poller';
 
 // ─── Idempotency ───────────────────────────────────────────────────────────
 
-export { IDEMPOTENCY_SCHEMA_SQL, InMemoryIdempotencyStore } from './idempotency/tracker';
+export { InMemoryIdempotencyStore } from './idempotency/tracker';
 export type { IdempotencyStore } from './idempotency/tracker';
 
 // ─── Temporal (infrastructure only — NOT workflow definitions) ─────────────

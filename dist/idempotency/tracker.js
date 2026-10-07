@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InMemoryIdempotencyStore = exports.IDEMPOTENCY_SCHEMA_SQL = void 0;
+exports.InMemoryIdempotencyStore = void 0;
 /**
  * Idempotency tracker — two-layer deduplication (ADR-010).
  *
@@ -9,36 +9,16 @@ exports.InMemoryIdempotencyStore = exports.IDEMPOTENCY_SCHEMA_SQL = void 0;
  *          Covers DLQ redrives, visibility-timeout re-deliveries, and anything that
  *          bypasses the 5-minute FIFO window.
  *
- * The SDK defines the contract; each application provides its own Drizzle implementation.
- *
- * Canonical SQL schema (apply in each consuming application):
- * ```sql
- * CREATE TABLE IF NOT EXISTS processed_mq_events (
- *   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
- *   message_id TEXT NOT NULL,
- *   tenant_id  UUID,
- *   event_type TEXT NOT NULL,
- *   processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
- *   CONSTRAINT processed_mq_events_unique UNIQUE (message_id, tenant_id, event_type)
- * );
- * -- Auto-expire rows older than 30 days (safe margin over 14-day DLQ retention)
- * CREATE INDEX IF NOT EXISTS processed_mq_events_expire_idx
- *   ON processed_mq_events (processed_at);
- * ```
+ * The SDK defines ONLY the `IdempotencyStore` contract; each application owns
+ * its ledger table, Drizzle implementation and migrations, and the live schemas
+ * have deliberately diverged: CRM uses `processed_events` (event_id PK +
+ * 3-state machine; renamed from processed_mq_events in CRM migration 0043),
+ * while FA and OM keep their own `processed_mq_events` tables in their own
+ * databases. A canonical DDL string (`IDEMPOTENCY_SCHEMA_SQL`) used to live
+ * here, but it described a schema no application actually had and nothing ever
+ * executed it — removed 2026-10-07 so it cannot mislead a future change into
+ * "re-aligning" an app with a fiction.
  */
-exports.IDEMPOTENCY_SCHEMA_SQL = `
-CREATE TABLE IF NOT EXISTS processed_mq_events (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  message_id   TEXT NOT NULL,
-  tenant_id    UUID,
-  event_type   TEXT NOT NULL,
-  processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT processed_mq_events_unique UNIQUE (message_id, tenant_id, event_type)
-);
-
-CREATE INDEX IF NOT EXISTS processed_mq_events_expire_idx
-  ON processed_mq_events (processed_at);
-`.trim();
 /**
  * In-memory idempotency store for testing only.
  * DO NOT use in production — state is lost on restart.

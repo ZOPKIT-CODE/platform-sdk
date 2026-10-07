@@ -42,7 +42,7 @@ export { OUTBOX_SCHEMA_SQL } from './outbox/types';
 export type { OutboxStore, OutboxRow, OutboxEnqueueInput } from './outbox/types';
 export { createOutboxPoller } from './outbox/poller';
 export type { OutboxPollerConfig } from './outbox/poller';
-export { IDEMPOTENCY_SCHEMA_SQL, InMemoryIdempotencyStore } from './idempotency/tracker';
+export { InMemoryIdempotencyStore } from './idempotency/tracker';
 export type { IdempotencyStore } from './idempotency/tracker';
 export { createTemporalClient, TASK_QUEUES } from './temporal/client';
 export { ACTIVITY_OPTIONS, LOOKUP_RETRY, CRM_MUTATION_RETRY, FA_JOURNAL_RETRY, HRMS_RETRY, PM_RETRY, EXTERNAL_API_RETRY, NOTIFICATION_RETRY, } from './temporal/retry-policies';
